@@ -7,6 +7,9 @@ import org.apache.commons.mail.Email;
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.SimpleEmail;
 
+import com.sun.javafx.binding.BidirectionalBinding;
+
+import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -15,11 +18,13 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.converter.NumberStringConverter;
 
 public class Controller {
 
@@ -65,7 +70,7 @@ public class Controller {
 	private TextField servidorText;
 
 	@FXML
-	private TextField usarConeText;
+	private TextField puertoText;
 
 	@FXML
 	private TextField emailText;
@@ -74,10 +79,10 @@ public class Controller {
 	private TextArea mensajeArea;
 
 	@FXML
-	private TextField contraseñaText;
+    private PasswordField passField;
 
 	@FXML
-	private TextField emailDesText;
+	private TextField destinatarioText;
 
 	@FXML
 	private TextField asuntoText;
@@ -100,6 +105,25 @@ public class Controller {
 	
 	@FXML
 	void onEnviarAction(ActionEvent event) throws EmailException {
+		//Intento de bindings del puerto
+		
+		
+		//model.puertoProperty().bind(puertoText.textProperty());
+		Bindings.bindBidirectional(puertoText.textProperty(), model.puertoProperty(), new NumberStringConverter());
+		
+		
+		
+		//------------------------------------------------------
+		model.servidorProperty().bind(servidorText.textProperty());
+		
+		model.sslProperty().bind(checkBox.selectedProperty());
+		model.remitenteProperty().bind(emailText.textProperty());
+		model.remitentePassProperty().bind(passField.textProperty());
+		model.destinatarioProperty().bind(destinatarioText.textProperty());
+		model.asuntoProperty().bind(asuntoText.textProperty());
+		model.mensajeProperty().bind(mensajeArea.textProperty());
+		
+		
 		
 		Alert bien = new Alert(AlertType.CONFIRMATION);
 		Alert error = new Alert(AlertType.ERROR);
@@ -107,7 +131,7 @@ public class Controller {
 		try {
 			Email email = new SimpleEmail();
 			email.setHostName(model.getServidor());
-			email.setSmtpPort(model.getPuerto());
+			email.setSmtpPort(465);
 			email.setAuthenticator(new DefaultAuthenticator(model.getRemitente(), model.getRemitentePass()));
 			email.setSSLOnConnect(model.isSsl());
 			email.setFrom(model.getRemitente());
@@ -116,18 +140,19 @@ public class Controller {
 			email.addTo(model.getDestinatario());
 			email.send();
 			
+			destinatarioText.textProperty().set("");
+			asuntoText.textProperty().set("");
+			mensajeArea.textProperty().set("");
+			
 			bien.setTitle("Mensaje enviado");
 			bien.setContentText("Mensaje enviado con éxito a" + "\'" +  model.getDestinatario() + "\'.");
 			bien.showAndWait();
 			
-			model.setDestinatario("");
-			model.setAsunto("");
-			model.setMensaje("");
+			
 		} catch (EmailException e) {
-			//e.printStackTrace();
 			error.setTitle("Error");
-			error.setContentText("No se pudo enviar el email");
-			error.setHeaderText(e.getMessage());
+			error.setContentText(e.getMessage());
+			error.setHeaderText("No se pudo enviar el email");
 			error.showAndWait();
 		}
 	}
@@ -144,10 +169,10 @@ public class Controller {
 	void onVaciarAction(ActionEvent event) {
 		servidorText.textProperty().set("");
 		checkBox.setSelected(false);
-		usarConeText.textProperty().set("");
+		puertoText.textProperty().set("");
 		emailText.textProperty().set("");
-		contraseñaText.textProperty().set("");
-		emailDesText.textProperty().set("");
+		passField.textProperty().set("");
+		destinatarioText.textProperty().set("");
 		asuntoText.textProperty().set("");
 		mensajeArea.textProperty().set("");
 
