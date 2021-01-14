@@ -9,6 +9,7 @@ import org.apache.commons.mail.Email;
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.SimpleEmail;
 
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -24,7 +25,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
+//import javafx.stage.Stage;
 import javafx.util.converter.NumberStringConverter;
 
 public class Controller implements Initializable {
@@ -103,70 +104,12 @@ public class Controller implements Initializable {
 
 	@FXML
 	private CheckBox checkBox;
-
-	@FXML
-	void onEnviarAction(ActionEvent event) throws EmailException {
-		int n = model.getPuerto();
-
-		Alert bien = new Alert(AlertType.CONFIRMATION);
-		Alert error = new Alert(AlertType.ERROR);
-		System.out.println(n);
-		try {
-			Email email = new SimpleEmail();
-			email.setHostName(model.getServidor());
-			email.setSmtpPort(n);
-			email.setAuthenticator(new DefaultAuthenticator(model.getRemitente(), model.getRemitentePass()));
-			email.setSSLOnConnect(model.isSsl());
-			email.setFrom(model.getRemitente());
-			email.setSubject(model.getAsunto());
-			email.setMsg(model.getMensaje());
-			email.addTo(model.getDestinatario());
-			email.send();
-
-			destinatarioText.textProperty().set("");
-			asuntoText.textProperty().set("");
-			mensajeArea.textProperty().set("");
-
-			bien.setTitle("Mensaje enviado");
-			bien.setContentText("Mensaje enviado con éxito a" + "\'" + model.getDestinatario() + "\'.");
-			bien.showAndWait();
-
-		} catch (EmailException e) {
-			error.setTitle("Error");
-			error.setContentText(e.getMessage());
-			error.setHeaderText("No se pudo enviar el email");
-			error.showAndWait();
-		}
-	}
-
-	@FXML
-	void onCerrarAction(ActionEvent event) {
-		Stage stage = (Stage) view.getScene().getWindow();
-		stage.close();
-	}
-
-	@FXML
-	void onVaciarAction(ActionEvent event) {
-		servidorText.textProperty().set("");
-		checkBox.setSelected(false);
-		puertoText.textProperty().set("");
-		emailText.textProperty().set("");
-		passField.textProperty().set("");
-		destinatarioText.textProperty().set("");
-		asuntoText.textProperty().set("");
-		mensajeArea.textProperty().set("");
-
-	}
-
-	public GridPane getView() {
-		return view;
-	}
-
+	
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		// Intento de bindings del puerto
-
-		// model.puertoProperty().bind(puertoText.textProperty());
+			//Se puede poner el puertoProperty() como String en el modelo para hacer un bindeo normal, ya que no nos hace faï¿½ta la integer property para hacer ninguna operaciï¿½n
+		 //model.puertoProperty().bind(puertoText.textProperty());
 		Bindings.bindBidirectional(puertoText.textProperty(), model.puertoProperty(), new NumberStringConverter());
 
 		// ------------------------------------------------------
@@ -180,5 +123,68 @@ public class Controller implements Initializable {
 		model.mensajeProperty().bind(mensajeArea.textProperty());
 
 	}
+
+	@FXML
+	void onEnviarAction(ActionEvent event) throws EmailException {
+		int puerto = model.getPuerto();
+
+		Alert bien = new Alert(AlertType.CONFIRMATION);
+		Alert error = new Alert(AlertType.ERROR);
+		System.out.println(puerto);
+		try {
+			Email email = new SimpleEmail();
+			email.setHostName(model.getServidor());
+			email.setSmtpPort(puerto);
+			email.setAuthenticator(new DefaultAuthenticator(model.getRemitente(), model.getRemitentePass()));
+			email.setSSLOnConnect(model.isSsl());
+			email.setFrom(model.getRemitente());
+			email.setSubject(model.getAsunto());
+			email.setMsg(model.getMensaje());
+			email.addTo(model.getDestinatario());
+			email.send();
+			
+			bien.setTitle("Mensaje enviado");
+			bien.setContentText("Mensaje enviado con Ã©xito a " + model.getDestinatario() + ".");
+			bien.showAndWait();
+			
+			destinatarioText.clear();
+			asuntoText.clear();
+			mensajeArea.clear();
+
+			
+
+		} catch (EmailException e) {
+			error.setTitle("Error");
+			error.setContentText(e.getMessage());
+			error.setHeaderText("No se pudo enviar el email");
+			error.showAndWait();
+		}
+	}
+
+	@FXML
+	void onCerrarAction(ActionEvent event) {
+//		Stage stage = (Stage) view.getScene().getWindow();
+//		stage.close();
+		Platform.exit();
+	}
+
+	@FXML
+	void onVaciarAction(ActionEvent event) {
+		servidorText.clear();
+		checkBox.setSelected(false);
+		puertoText.clear();
+		emailText.clear();
+		passField.clear();
+		destinatarioText.clear();
+		asuntoText.clear();
+		mensajeArea.clear();
+
+	}
+
+	public GridPane getView() {
+		return view;
+	}
+
+	
 
 }
